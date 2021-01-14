@@ -13,25 +13,35 @@ import re
 
 def scraper(link):
     website = requests.get(link)
+    soup_img = BeautifulSoup(
+        website.content, 'html.parser', parse_only=SoupStrainer('img'))
     soup = BeautifulSoup(website.content, 'html.parser')
+    soup_link = BeautifulSoup(
+        website.content, 'html.parser', parse_only=SoupStrainer('a'))
 
-    image_data = []
-    all_links = []
+    for link in soup_link:
+        if link.has_attr('href'):
+            address = link.get('href')
+            url = re.search(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+',
+                            str(address))
+            if url:
+                print('URL: ' + url.group())
 
-    # IMAGE INFO:
-    images = soup.select('img')
-    for image in images:
+    for image in soup_img:
         src = image.get('src')
-        alt = image.get('alt')
-        image_data.append({'src': src, 'alt': alt})
-    print('IMAGE INFO:', '\n', image_data)
+        print('IMAGE: ' + str(src))
 
-    links = soup.select('a')
-    for ahref in links:
-        href = ahref.get('href')
-        href = href.strip() if href is not None else ''
-        all_links.append(href)
-    print('LINKS:', '\n', all_links)
+    for number in soup:
+        numbers = re.search(
+            r'1?\W*([2-9][0-8][0-9])\W*([2-9][0-9]{2})\W*([0-9]{4})(\se?x?t?(\d*))?', str(number))
+        if numbers:
+            print('PHONE NUMBER: ' + numbers.group())
+
+    for email in soup:
+        emails = re.search(
+            r'([a-zA-Z]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.][a-zA-Z]+)', str(email))
+        if emails:
+            print('EMAIL: ' + emails.group())
 
 
 def create_parser():
