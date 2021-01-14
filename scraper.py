@@ -1,19 +1,28 @@
 '''
 RESOURCS USED:
 https://www.makeuseof.com/beautiful-soup-tutorial/
+http://emailregex.com/
 '''
 
 import argparse
 import sys
 import requests
-
-# EXAMPLE CMD:
-# python scraper.py http://kenzie.academy/
+from bs4 import BeautifulSoup, SoupStrainer
+import re
 
 
 def scraper(link):
-    '''Scrapes a website for phone numbers, email addresses, links, and images.'''
-    req = requests.get(link)
+    website = requests.get(link)
+    soup = BeautifulSoup(website.content, 'html.parser')
+
+    image_data = []
+
+    images = soup.select('img')
+    for image in images:
+        src = image.get('src')
+        alt = image.get('alt')
+        image_data.append({'src': src, 'alt': alt})
+    print(image_data)
 
 
 def create_parser():
